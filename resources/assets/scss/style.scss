@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+    font-family: 'Nunito', sans-serif;
+}
+
+@font-face {
+    font-family: 'Nunito';
+    font-weight: 400;
+    src: url('../fonts/Nunito-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Nunito';
+    font-weight: 700;
+    src: url('../fonts/Nunito-Bold.ttf');
+}
+
+@font-face {
+    font-family: 'Nunito';
+    font-weight: 600;
+    src: url('../fonts/Nunito-SemiBold.ttf');
+}
+
+
+.container {
+    margin: 0 auto;
+}
+
+.btn {
+    @apply block  text-blue-50 rounded-lg py-2 px-4
+    transition duration-300 ease-in-out transform
+    hover:-translate-y-1 hover:shadow-lg flex items-center
+    filter drop-shadow-lg cursor-pointer
+}
+
+* {
+    font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+body {
+    position: relative;
+    height: 100vh;
+
+}
+
+.modal {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+}
+
+#overflow {
+    display: none;
+}
+
+.show-login-modal {
+    display: block;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.clipped {
+    overflow-y: hidden;
+}
+
+.cell {
+    @apply flex justify-center items-center h-12 w-24 border-b border-gray-100 border-collapse
+}

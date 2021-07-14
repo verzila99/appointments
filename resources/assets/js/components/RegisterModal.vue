@@ -1,0 +1,60 @@
+<template>
+
+    <div class = "flex flex-col justify-between items-start h-96 w-80 p-5">
+
+        <label for = "email">Email</label>
+        <div class = "flex  items-center rounded-md h-8 relative w-full">
+            <i class = "bx bx-at text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"></i>
+            <input class = " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full"
+                   id = "email"
+                   name = "email"
+                   type = "text"
+                   placeholder = "Enter your name">
+        </div>
+        <label for = "password">Password</label>
+        <div class = "flex  items-center  rounded-md h-8 relative w-full">
+            <i class = "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"></i>
+            <input class = " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full"
+                   id = "password"
+                   name = "password"
+                   type = "password"
+                   placeholder = "Enter password">
+        </div>
+        <label for = "confirmed_password">Confirm password</label>
+        <div class = "flex  items-center  rounded-md h-8 relative w-full">
+            <i class = "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"></i>
+            <input class = " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full"
+                   id = "confirmed_password"
+                   name = "confirmed_password"
+                   type = "password"
+                   placeholder = "Enter password again">
+        </div>
+        <a class = "btn bg-primary">Sign up</a>
+        <div class = "flex justify-between items-center w-full">
+            <a class = "text-link hover:text-hover cursor-pointer">Forgot password?</a>
+            <a @click = "$emit('switch-to-login')" class = "text-link hover:text-hover cursor-pointer">Sign in</a>
+        </div>
+    </div>
+</template>
+
+<script>
+
+export default {
+    name: "RegisterModal",
+    data() {
+        return {
+            email: '',
+            password: '',
+            confirmed_password: '',
+            remember: false,
+
+        }
+    },
+
+
+}
+</script>
+
+<style>
+
+</style>
