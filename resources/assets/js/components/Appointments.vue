@@ -1,35 +1,24 @@
 <template xmlns = "http://www.w3.org/1999/html">
     <div class = "container flex justify-center items-center ">
         <section class = "appointments mt-6">
-            <div class = "flex justify-between items-start h-screen  gap-6">
+            <div class = "flex flex-col justify-between items-start h-screen  gap-6">
 
                 <div class = "center con-selects">
-                    <vs-select placeholder = "Select fitness instructor" v-model = "instructor">
-                        <vs-option label = "Vuesax" value = "1">
-                            Vuesax
-                        </vs-option>
-                        <vs-option label = "Vue" value = "2">
-                            Vue
-                        </vs-option>
-                        <vs-option label = "Javascript" value = "3">
-                            Javascript
-                        </vs-option>
-                        <vs-option label = "Sass" value = "4">
-                            Sass
-                        </vs-option>
-                        <vs-option label = "Typescript" value = "5">
-                            Typescript
-                        </vs-option>
-                        <vs-option label = "Webpack" value = "6">
-                            Webpack
-                        </vs-option>
-                        <vs-option label = "Nodejs" value = "7">
-                            Nodejs
-                        </vs-option>
+                    <vs-select :placeholder = "selectedInstructor"
+                               :value = "selectedInstructor"
+                               v-on:input = "selectInstructor( $event.target.value)"
+                               ref = "p">
+
+                        <template v-for = "instructor in instructors">
+                            <vs-option :label = "instructor.name" :key = "instructor.id" :value = "instructor.id">
+                                {{ instructor.name }}
+                            </vs-option>
+                        </template>
+
                     </vs-select>
                 </div>
 
-                <div class = "flex justify-between items-center shadow-2xl rounded-lg p-6">
+                <div v-if = "false" class = "flex justify-between items-center shadow-2xl rounded-lg p-6">
                     <div class = "time flex justify-start flex-col items-center">
 
                         <div class = "cell">
@@ -46,11 +35,14 @@
                             <h4 class = "w-full text-center font-bold">{{ day.date }}</h4>
                             <h4>{{ day.weekday }}</h4>
                         </div>
-                        <div v-for = "time in times" class = "cell">
-                            <a class = "btn bg-purple-300 text-white w-16 flex justify-center items-center"> {{
-                                    time
-                                                                                                             }} </a>
-                        </div>
+                        <template v-if = "workingDays().split(',').includes(day.weekdayNumber+1)">
+                            <div v-for = "time in times" class = "cell">
+                                <a class = "btn bg-purple-300 text-white w-16 flex justify-center items-center"> {{
+                                        time
+                                                                                                                 }} </a>
+                            </div>
+
+                        </template>
 
                     </div>
                 </div>
@@ -61,6 +53,7 @@
 </template>
 
 <script>
+
 export default {
     name: "Appointments",
     data() {
@@ -77,11 +70,42 @@ export default {
                 '16:00',
             ],
             days: [],
-            instructor: ''
+            instructors: [],
+            selectedInstructor: '',
+
 
         }
     }
+    ,
+    methods: {
+        workingDays() {
+            const instructor = this.instructors.find((el) => {
+                return el.id === this.selectedInstructor;
+            });
+            return instructor['working_days'];
 
+
+        },
+        selectInstructor(e) {
+            this.selectInstructor = e;
+            console.log(this.selectInstructor, 666);
+        }
+    },
+    beforeCreate: function () {
+        const loading = this.$vs.loading({color: '#48CAE4'});
+        axios.get('sanctum/csrf-cookie').then(() => {
+            axios.get('/api/instructors').then((response) => {
+                if (response.status === 200) {
+                    console.log(response.data);
+                    this.instructors = response.data;
+                }
+                loading.close();
+            }).catch(e => {
+                loading.close();
+                console.log(e)
+            });
+        })
+    }
     ,
     mounted() {
         const currentDate = new Date();
@@ -92,10 +116,18 @@ export default {
             let dayItem = {};
             dayItem.date = `${new Intl.DateTimeFormat("en-us", {month: "long"}).format(date)}, ${date.getDate()}`
             dayItem.weekday = new Intl.DateTimeFormat("en-us", {weekday: "long"}).format(date);
+            dayItem.weekdayNumber = date.getDay();
+
             this.days.push(dayItem);
         }
+    },
+    watch: {
+        selectedInstructor: function () {
+            console.log(this.selectedInstructor, 234234);
+
+        },
     }
-    ,
+
 }
 </script>
 

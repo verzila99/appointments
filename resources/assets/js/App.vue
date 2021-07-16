@@ -1,10 +1,13 @@
 <template>
     <div>
         <transition name = "modal">
-            <modal @close-modal = "closeModal" v-if = "active"></modal>
+            <modal @close-modal = "closeModal" @register = "register" @login = "login" v-if = "active"></modal>
         </transition>
 
-        <navbar @activate-login-modal = "activateModal"></navbar>
+        <navbar @activate-login-modal = "activateModal"
+                @logout = "logout"
+                :username = "username"
+                :user-image = "userImage"></navbar>
         <appointments></appointments>
     </div>
 </template>
@@ -16,7 +19,9 @@ import Appointments from "./components/Appointments";
 export default {
     data() {
         return {
-            active: false
+            active: false,
+            username: "",
+            userImage: "",
         };
     },
     props: {
@@ -31,14 +36,25 @@ export default {
     methods: {
         activateModal: function () {
             this.active = true;
-            document.querySelector('body').classList.add('clipped');
             document.querySelector('#overlay').classList.add('show-login-modal');
 
         },
         closeModal: function () {
             this.active = false;
-            document.querySelector('body').classList.remove('clipped');
             document.querySelector('#overlay').classList.remove('show-login-modal');
+        },
+        register: function (val) {
+            this.username = val;
+            this.closeModal();
+        },
+        login: function (val) {
+            this.username = val[0];
+            this.userImage = val[1];
+            this.closeModal();
+        },
+        logout: function () {
+            this.username = '';
+            this.userImage = '';
         }
     },
     watch: {

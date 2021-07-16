@@ -1858,13 +1858,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   data: function data() {
     return {
-      active: false
+      active: false,
+      username: "",
+      userImage: ""
     };
   },
   props: {
@@ -1878,13 +1883,24 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     activateModal: function activateModal() {
       this.active = true;
-      document.querySelector('body').classList.add('clipped');
       document.querySelector('#overlay').classList.add('show-login-modal');
     },
     closeModal: function closeModal() {
       this.active = false;
-      document.querySelector('body').classList.remove('clipped');
       document.querySelector('#overlay').classList.remove('show-login-modal');
+    },
+    register: function register(val) {
+      this.username = val;
+      this.closeModal();
+    },
+    login: function login(val) {
+      this.username = val[0];
+      this.userImage = val[1];
+      this.closeModal();
+    },
+    logout: function logout() {
+      this.username = '';
+      this.userImage = '';
     }
   },
   watch: {
@@ -1963,22 +1979,49 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Appointments",
   data: function data() {
     return {
       times: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
       days: [],
-      instructor: ''
+      instructors: [],
+      selectedInstructor: ''
     };
+  },
+  methods: {
+    workingDays: function workingDays() {
+      var _this = this;
+
+      var instructor = this.instructors.find(function (el) {
+        return el.id === _this.selectedInstructor;
+      });
+      return instructor['working_days'];
+    },
+    selectInstructor: function selectInstructor(e) {
+      this.selectInstructor = e;
+      console.log(this.selectInstructor, 666);
+    }
+  },
+  beforeCreate: function beforeCreate() {
+    var _this2 = this;
+
+    var loading = this.$vs.loading({
+      color: '#48CAE4'
+    });
+    axios.get('sanctum/csrf-cookie').then(function () {
+      axios.get('/api/instructors').then(function (response) {
+        if (response.status === 200) {
+          console.log(response.data);
+          _this2.instructors = response.data;
+        }
+
+        loading.close();
+      })["catch"](function (e) {
+        loading.close();
+        console.log(e);
+      });
+    });
   },
   mounted: function mounted() {
     var currentDate = new Date();
@@ -1996,7 +2039,13 @@ __webpack_require__.r(__webpack_exports__);
       dayItem.weekday = new Intl.DateTimeFormat("en-us", {
         weekday: "long"
       }).format(date);
+      dayItem.weekdayNumber = date.getDay();
       this.days.push(dayItem);
+    }
+  },
+  watch: {
+    selectedInstructor: function selectedInstructor() {
+      console.log(this.selectedInstructor, 234234);
     }
   }
 });
@@ -2044,14 +2093,50 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "LoginModal",
   data: function data() {
     return {
       email: '',
       password: '',
-      remember: false
+      remember_token: false,
+      error: ''
     };
+  },
+  methods: {
+    login: function login() {
+      var _this = this;
+
+      axios.get('/sanctum/csrf-cookie').then(function () {
+        axios.post('/api/login', {
+          email: _this.email,
+          password: _this.password,
+          remember_token: _this.remember_token
+        }).then(function (response) {
+          if (response.status === 200) {
+            _this.$emit('login', [response.data.name, response.data.image]);
+          }
+        })["catch"](function (error) {
+          _this.error = error.response.data;
+        });
+      });
+    }
   }
 });
 
@@ -2082,7 +2167,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
@@ -2101,6 +2185,12 @@ __webpack_require__.r(__webpack_exports__);
     },
     switchLogin: function switchLogin() {
       this.modal = 'login';
+    },
+    register: function register(val) {
+      this.$emit('register', val);
+    },
+    login: function login(val) {
+      this.$emit('login', val);
     }
   }
 });
@@ -2138,19 +2228,73 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Navbar",
   data: function data() {
     return {
       active: false,
-      email: '',
-      password: '',
-      remember: false
+      nickname: '',
+      userImage: ''
     };
+  },
+  props: {
+    username: String
   },
   methods: {
     activateLoginModal: function activateLoginModal() {
       this.$emit('activate-login-modal');
+    },
+    logout: function logout() {
+      var _this = this;
+
+      axios.get('/sanctum/csrf-cookie').then(function () {
+        axios.get('/api/logout').then(function (response) {
+          if (response.status === 200) {
+            _this.nickname = '';
+            _this.userImage = '';
+
+            _this.$emit('logout');
+          }
+        })["catch"](function (error) {
+          return console.log(error.response);
+        });
+      });
+    }
+  },
+  beforeCreate: function beforeCreate() {
+    var _this2 = this;
+
+    axios.get('sanctum/csrf-cookie').then(function () {
+      axios.get('api/show').then(function (response) {
+        if (response.status === 200) {
+          _this2.nickname = response.data.name;
+          _this2.userImage = response.data.image;
+        }
+      })["catch"](function (error) {
+        return console.log(error.response);
+      });
+    });
+  },
+  watch: {
+    username: function username() {
+      this.nickname = this.username;
     }
   }
 });
@@ -2207,15 +2351,70 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "RegisterModal",
   data: function data() {
     return {
+      name: '',
       email: '',
       password: '',
-      confirmed_password: '',
-      remember: false
+      password_confirmation: '',
+      error: ''
     };
+  },
+  methods: {
+    register: function register() {
+      var _this = this;
+
+      axios.get('/sanctum/csrf-cookie').then(function () {
+        axios.post('/api/register', {
+          name: _this.name,
+          email: _this.email,
+          password: _this.password,
+          password_confirmation: _this.password_confirmation
+        }).then(function (response) {
+          if (response.status === 200) {
+            _this.$emit('register', response.data.name);
+
+            _this.openNotification('success', 'Registration successful!', 'top-right');
+          }
+        })["catch"](function (error) {
+          console.log(error.response);
+          _this.error = error.response.data;
+        });
+      });
+    },
+    openNotification: function openNotification(color, title) {
+      var position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      var noti = this.$vs.notification({
+        color: color,
+        title: title,
+        position: position
+      });
+      noti.close();
+    }
   }
 });
 
@@ -2280,6 +2479,7 @@ window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.withCredentials = true;
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
@@ -20909,13 +21109,22 @@ var render = function() {
         { attrs: { name: "modal" } },
         [
           _vm.active
-            ? _c("modal", { on: { "close-modal": _vm.closeModal } })
+            ? _c("modal", {
+                on: {
+                  "close-modal": _vm.closeModal,
+                  register: _vm.register,
+                  login: _vm.login
+                }
+              })
             : _vm._e()
         ],
         1
       ),
       _vm._v(" "),
-      _c("navbar", { on: { "activate-login-modal": _vm.activateModal } }),
+      _c("navbar", {
+        attrs: { username: _vm.username, "user-image": _vm.userImage },
+        on: { "activate-login-modal": _vm.activateModal, logout: _vm.logout }
+      }),
       _vm._v(" "),
       _c("appointments")
     ],
@@ -20952,7 +21161,10 @@ var render = function() {
       _c("section", { staticClass: "appointments mt-6" }, [
         _c(
           "div",
-          { staticClass: "flex justify-between items-start h-screen  gap-6" },
+          {
+            staticClass:
+              "flex flex-col justify-between items-start h-screen  gap-6"
+          },
           [
             _c(
               "div",
@@ -20961,147 +21173,49 @@ var render = function() {
                 _c(
                   "vs-select",
                   {
-                    attrs: { placeholder: "Select fitness instructor" },
-                    model: {
-                      value: _vm.instructor,
-                      callback: function($$v) {
-                        _vm.instructor = $$v
-                      },
-                      expression: "instructor"
+                    ref: "p",
+                    attrs: {
+                      placeholder: _vm.selectedInstructor,
+                      value: _vm.selectedInstructor
+                    },
+                    on: {
+                      input: function($event) {
+                        return _vm.selectInstructor($event.target.value)
+                      }
                     }
                   },
                   [
-                    _c(
-                      "vs-option",
-                      { attrs: { label: "Vuesax", value: "1" } },
-                      [
-                        _vm._v(
-                          "\n                        Vuesax\n                    "
+                    _vm._l(_vm.instructors, function(instructor) {
+                      return [
+                        _c(
+                          "vs-option",
+                          {
+                            key: instructor.id,
+                            attrs: {
+                              label: instructor.name,
+                              value: instructor.id
+                            }
+                          },
+                          [
+                            _vm._v(
+                              "\n                            " +
+                                _vm._s(instructor.name) +
+                                "\n                        "
+                            )
+                          ]
                         )
                       ]
-                    ),
-                    _vm._v(" "),
-                    _c("vs-option", { attrs: { label: "Vue", value: "2" } }, [
-                      _vm._v(
-                        "\n                        Vue\n                    "
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c(
-                      "vs-option",
-                      { attrs: { label: "Javascript", value: "3" } },
-                      [
-                        _vm._v(
-                          "\n                        Javascript\n                    "
-                        )
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _c("vs-option", { attrs: { label: "Sass", value: "4" } }, [
-                      _vm._v(
-                        "\n                        Sass\n                    "
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c(
-                      "vs-option",
-                      { attrs: { label: "Typescript", value: "5" } },
-                      [
-                        _vm._v(
-                          "\n                        Typescript\n                    "
-                        )
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "vs-option",
-                      { attrs: { label: "Webpack", value: "6" } },
-                      [
-                        _vm._v(
-                          "\n                        Webpack\n                    "
-                        )
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _c(
-                      "vs-option",
-                      { attrs: { label: "Nodejs", value: "7" } },
-                      [
-                        _vm._v(
-                          "\n                        Nodejs\n                    "
-                        )
-                      ]
-                    )
+                    })
                   ],
-                  1
+                  2
                 )
               ],
               1
             ),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass:
-                  "flex justify-between items-center shadow-2xl rounded-lg p-6"
-              },
-              [
-                _c(
-                  "div",
-                  {
-                    staticClass: "time flex justify-start flex-col items-center"
-                  },
-                  [
-                    _c("div", { staticClass: "cell" }),
-                    _vm._v(" "),
-                    _vm._l(_vm.times, function(time) {
-                      return _c("div", { staticClass: "cell" }, [
-                        _c("h4", { staticClass: "font-bold" }, [
-                          _vm._v(_vm._s(time))
-                        ])
-                      ])
-                    })
-                  ],
-                  2
-                ),
-                _vm._v(" "),
-                _vm._l(_vm.days, function(day) {
-                  return _c(
-                    "div",
-                    {
-                      staticClass:
-                        "time flex justify-start flex-col items-center"
-                    },
-                    [
-                      _c("div", { staticClass: "cell flex-wrap " }, [
-                        _c(
-                          "h4",
-                          { staticClass: "w-full text-center font-bold" },
-                          [_vm._v(_vm._s(day.date))]
-                        ),
-                        _vm._v(" "),
-                        _c("h4", [_vm._v(_vm._s(day.weekday))])
-                      ]),
-                      _vm._v(" "),
-                      _vm._l(_vm.times, function(time) {
-                        return _c("div", { staticClass: "cell" }, [
-                          _c(
-                            "a",
-                            {
-                              staticClass:
-                                "btn bg-purple-300 text-white w-16 flex justify-center items-center"
-                            },
-                            [_vm._v(" " + _vm._s(time) + " ")]
-                          )
-                        ])
-                      })
-                    ],
-                    2
-                  )
-                })
-              ],
-              2
-            )
+             false
+              ? 0
+              : _vm._e()
           ]
         )
       ])
@@ -21133,17 +21247,139 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "flex flex-col justify-between items-start h-80 w-80 p-5" },
+    {
+      staticClass:
+        "flex flex-col justify-between items-start space-y-4 w-80 p-5"
+    },
     [
       _c("label", { attrs: { for: "email" } }, [_vm._v("Email")]),
       _vm._v(" "),
-      _vm._m(0),
+      _c(
+        "div",
+        { staticClass: "flex  items-center rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bx-at text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.email,
+                expression: "email"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            class: {
+              "border-red-600":
+                (_vm.error.errors && _vm.error.errors.email) ||
+                (!_vm.error.message && _vm.error)
+            },
+            attrs: {
+              id: "email",
+              name: "email",
+              type: "text",
+              placeholder: "Enter your name"
+            },
+            domProps: { value: _vm.email },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.email = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
+      _vm._v(" "),
+      _vm.error.errors && _vm.error.errors.email
+        ? _vm._l(_vm.error.errors.email, function(error) {
+            return _c("p", { staticClass: "text-red-600" }, [
+              _vm._v(_vm._s(error))
+            ])
+          })
+        : _vm._e(),
       _vm._v(" "),
       _c("label", { attrs: { for: "password" } }, [_vm._v("Password")]),
       _vm._v(" "),
-      _vm._m(1),
+      _c(
+        "div",
+        { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.password,
+                expression: "password"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            class: {
+              "border-red-600":
+                (_vm.error.errors && _vm.error.errors.password) ||
+                (!_vm.error.message && _vm.error)
+            },
+            attrs: {
+              id: "password",
+              name: "password",
+              type: "password",
+              placeholder: "Enter password"
+            },
+            domProps: { value: _vm.password },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.password = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
       _vm._v(" "),
-      _c("a", { staticClass: "btn bg-primary" }, [_vm._v("Sign in")]),
+      _vm.error.errors && _vm.error.errors.password
+        ? _vm._l(_vm.error.errors.password, function(error) {
+            return _c("p", { staticClass: "text-red-600" }, [
+              _vm._v(_vm._s(error))
+            ])
+          })
+        : !_vm.error.message
+        ? _c("p", { staticClass: "text-red-600" }, [_vm._v(_vm._s(_vm.error))])
+        : _vm._e(),
+      _vm._v(" "),
+      _c(
+        "vs-checkbox",
+        {
+          attrs: { color: "#48CAE4" },
+          model: {
+            value: _vm.remember_token,
+            callback: function($$v) {
+              _vm.remember_token = $$v
+            },
+            expression: "remember_token"
+          }
+        },
+        [_vm._v("\n        Remember me\n    ")]
+      ),
+      _vm._v(" "),
+      _c("a", { staticClass: "btn bg-primary", on: { click: _vm.login } }, [
+        _vm._v("Sign in")
+      ]),
       _vm._v(" "),
       _c("div", { staticClass: "flex justify-between items-center w-full" }, [
         _c("a", { staticClass: "text-link hover:text-hover cursor-pointer" }, [
@@ -21163,63 +21399,11 @@ var render = function() {
           [_vm._v("Register")]
         )
       ])
-    ]
+    ],
+    2
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "flex  items-center rounded-md h-8 relative w-full" },
-      [
-        _c("i", {
-          staticClass:
-            "bx bx-at text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
-        }),
-        _vm._v(" "),
-        _c("input", {
-          staticClass:
-            " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
-          attrs: {
-            id: "email",
-            name: "email",
-            type: "text",
-            placeholder: "Enter your name"
-          }
-        })
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
-      [
-        _c("i", {
-          staticClass:
-            "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
-        }),
-        _vm._v(" "),
-        _c("input", {
-          staticClass:
-            " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
-          attrs: {
-            id: "password",
-            name: "password",
-            type: "password",
-            placeholder: "Enter password"
-          }
-        })
-      ]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -21244,7 +21428,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "modal  absolute shadow-2xl\nrounded-lg bg-white" },
+    { staticClass: "modal  absolute shadow-2xl rounded-lg bg-white" },
     [
       _c(
         "div",
@@ -21266,10 +21450,16 @@ var render = function() {
         [
           _vm.modal === "login"
             ? _c("login-modal", {
-                on: { "switch-to-register": _vm.switchRegister }
+                on: {
+                  "switch-to-register": _vm.switchRegister,
+                  login: _vm.login
+                }
               })
             : _c("register-modal", {
-                on: { "switch-to-login": _vm.switchLogin }
+                on: {
+                  "switch-to-login": _vm.switchLogin,
+                  register: _vm.register
+                }
               })
         ],
         1
@@ -21317,14 +21507,63 @@ var render = function() {
           "div",
           { staticClass: "navbar-right flex justify-around items-center " },
           [
-            _c(
-              "button",
-              {
-                staticClass: "btn bg-primary",
-                on: { click: _vm.activateLoginModal }
-              },
-              [_vm._v("Login\n            ")]
-            )
+            _vm.nickname
+              ? _c(
+                  "div",
+                  { staticClass: "flex justify-between items-center gap-4" },
+                  [
+                    _c(
+                      "div",
+                      { staticClass: "flex justify-around items-center gap-4" },
+                      [
+                        _c(
+                          "vs-avatar",
+                          {
+                            staticClass: "capitalize",
+                            attrs: { size: "40", color: "#7d33ff" }
+                          },
+                          [
+                            [
+                              _vm._v(
+                                "\n                            " +
+                                  _vm._s(_vm.nickname[0]) +
+                                  "\n                        "
+                              )
+                            ]
+                          ],
+                          2
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "a",
+                          {
+                            staticClass: "a-icon capitalize",
+                            attrs: { href: "#" }
+                          },
+                          [_vm._v(" " + _vm._s(_vm.nickname))]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn bg-primary",
+                        on: { click: _vm.logout }
+                      },
+                      [_vm._v("Logout\n                ")]
+                    )
+                  ]
+                )
+              : _c(
+                  "button",
+                  {
+                    staticClass: "btn bg-primary",
+                    on: { click: _vm.activateLoginModal }
+                  },
+                  [_vm._v("Login\n            ")]
+                )
           ]
         )
       ]
@@ -21376,23 +21615,204 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "div",
-    { staticClass: "flex flex-col justify-between items-start h-96 w-80 p-5" },
+    {
+      staticClass:
+        "flex flex-col justify-between items-start space-y-6 w-80 p-5"
+    },
     [
+      _c("label", { attrs: { for: "name" } }, [_vm._v("Name")]),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "flex  items-center rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bx-user text-gray-500 text-xl absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.name,
+                expression: "name"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            attrs: {
+              id: "name",
+              name: "name",
+              type: "text",
+              placeholder: "Enter your name"
+            },
+            domProps: { value: _vm.name },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.name = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
+      _vm._v(" "),
+      _vm.error.errors && _vm.error.errors.name
+        ? _vm._l(_vm.error.errors.name, function(error) {
+            return _c("p", { staticClass: "text-red-600" }, [
+              _vm._v(_vm._s(error))
+            ])
+          })
+        : _vm._e(),
+      _vm._v(" "),
       _c("label", { attrs: { for: "email" } }, [_vm._v("Email")]),
       _vm._v(" "),
-      _vm._m(0),
+      _c(
+        "div",
+        { staticClass: "flex  items-center rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bx-at text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.email,
+                expression: "email"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            attrs: {
+              id: "email",
+              name: "email",
+              type: "text",
+              placeholder: "Enter your email"
+            },
+            domProps: { value: _vm.email },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.email = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
+      _vm._v(" "),
+      _vm.error.errors && _vm.error.errors.email
+        ? _vm._l(_vm.error.errors.email, function(error) {
+            return _c("p", { staticClass: "text-red-600" }, [
+              _vm._v(_vm._s(error))
+            ])
+          })
+        : _vm._e(),
       _vm._v(" "),
       _c("label", { attrs: { for: "password" } }, [_vm._v("Password")]),
       _vm._v(" "),
-      _vm._m(1),
+      _c(
+        "div",
+        { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.password,
+                expression: "password"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            attrs: {
+              id: "password",
+              name: "password",
+              type: "password",
+              placeholder: "Enter password"
+            },
+            domProps: { value: _vm.password },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.password = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
       _vm._v(" "),
       _c("label", { attrs: { for: "confirmed_password" } }, [
         _vm._v("Confirm password")
       ]),
       _vm._v(" "),
-      _vm._m(2),
+      _c(
+        "div",
+        { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
+        [
+          _c("i", {
+            staticClass:
+              "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
+          }),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.password_confirmation,
+                expression: "password_confirmation"
+              }
+            ],
+            staticClass:
+              " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
+            attrs: {
+              id: "confirmed_password",
+              name: "password_confirmation",
+              type: "password",
+              placeholder: "Enter password again"
+            },
+            domProps: { value: _vm.password_confirmation },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.password_confirmation = $event.target.value
+              }
+            }
+          })
+        ]
+      ),
       _vm._v(" "),
-      _c("a", { staticClass: "btn bg-primary" }, [_vm._v("Sign up")]),
+      _vm.error.errors && _vm.error.errors.password
+        ? _vm._l(_vm.error.errors.password, function(error) {
+            return _c("p", { staticClass: "text-red-600" }, [
+              _vm._v(_vm._s(error))
+            ])
+          })
+        : _vm._e(),
+      _vm._v(" "),
+      _c("a", { staticClass: "btn bg-primary", on: { click: _vm.register } }, [
+        _vm._v("Sign up")
+      ]),
       _vm._v(" "),
       _c("div", { staticClass: "flex justify-between items-center w-full" }, [
         _c("a", { staticClass: "text-link hover:text-hover cursor-pointer" }, [
@@ -21412,89 +21832,11 @@ var render = function() {
           [_vm._v("Sign in")]
         )
       ])
-    ]
+    ],
+    2
   )
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "flex  items-center rounded-md h-8 relative w-full" },
-      [
-        _c("i", {
-          staticClass:
-            "bx bx-at text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
-        }),
-        _vm._v(" "),
-        _c("input", {
-          staticClass:
-            " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
-          attrs: {
-            id: "email",
-            name: "email",
-            type: "text",
-            placeholder: "Enter your name"
-          }
-        })
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
-      [
-        _c("i", {
-          staticClass:
-            "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
-        }),
-        _vm._v(" "),
-        _c("input", {
-          staticClass:
-            " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
-          attrs: {
-            id: "password",
-            name: "password",
-            type: "password",
-            placeholder: "Enter password"
-          }
-        })
-      ]
-    )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "div",
-      { staticClass: "flex  items-center  rounded-md h-8 relative w-full" },
-      [
-        _c("i", {
-          staticClass:
-            "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"
-        }),
-        _vm._v(" "),
-        _c("input", {
-          staticClass:
-            " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full",
-          attrs: {
-            id: "confirmed_password",
-            name: "confirmed_password",
-            type: "password",
-            placeholder: "Enter password again"
-          }
-        })
-      ]
-    )
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 

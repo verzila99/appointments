@@ -18,21 +18,7 @@ class CreateAppointmentsTable extends Migration
             function (Blueprint $table) {
                 $table->id();
                 $table->date('start_time');
-                $table->integer('user_id');
-                $table->integer('instructor_id');
                 $table->timestamps();
-            }
-        );
-        Schema::table(
-            'instructors',
-            function (Blueprint $table) {
-                $table->foreignId('instructor_id')->constrained();
-            }
-        );
-        Schema::table(
-            'users',
-            function (Blueprint $table) {
-                $table->foreignId('user_id')->constrained();
             }
         );
     }
