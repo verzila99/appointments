@@ -13,8 +13,9 @@ class Appointment extends Model
 
 
     public function instructors()
-    : void
+    : \Illuminate\Database\Eloquent\Relations\BelongsTo
+
     {
-        $this->belongsTo(Instructor::class);
+        return $this->belongsTo(Instructor::class);
     }
 }

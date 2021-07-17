@@ -17,13 +17,13 @@ class CreateAppointmentsTable extends Migration
             'appointments',
             function (Blueprint $table) {
                 $table->id();
-                $table->date('start_time');
+                $table->dateTime('start_time');
                 $table->timestamps();
             }
         );
     }
 
-
+    
     /**
      * Reverse the migrations.
      *

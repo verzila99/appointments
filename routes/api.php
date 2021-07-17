@@ -11,6 +11,7 @@
 |
 */
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,3 +27,4 @@ Route::get('/logout', [UserController::class, 'logout']);
 
 Route::get('/show', [UserController::class, 'show']);
 Route::get('/instructors', [InstructorController::class, 'index']);
+Route::post('/appointments', [AppointmentController::class, 'store']);

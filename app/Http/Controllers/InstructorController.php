@@ -10,6 +10,6 @@ class InstructorController extends Controller
     public function index()
     : array
     {
-        return Instructor::All()->toArray();
+        return Instructor::with('appointments')->get()->toArray();
     }
 }

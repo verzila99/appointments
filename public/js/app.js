@@ -1979,28 +1979,66 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "Appointments",
   data: function data() {
     return {
-      times: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'],
+      workingHours: ['8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'],
+      workingHoursOfSelectedInstructor: [],
+      inaccessibleHoursOfSelectedInstructor: [],
       days: [],
       instructors: [],
-      selectedInstructor: ''
+      selectedInstructorId: '',
+      selectedInstructor: {},
+      value1: ''
     };
   },
   methods: {
     workingDays: function workingDays() {
+      return this.selectedInstructor['working_days'];
+    },
+    makeAppointment: function makeAppointment(e) {
       var _this = this;
 
-      var instructor = this.instructors.find(function (el) {
-        return el.id === _this.selectedInstructor;
+      console.log(e.target.dataset.time);
+      var loading = this.$vs.loading({
+        color: '#48CAE4'
       });
-      return instructor['working_days'];
+      axios.get('/sanctum/csrf-cookie').then(function () {
+        axios.post('/api/appointments', {
+          instructor: _this.selectedInstructorId,
+          time: e.target.dataset.time
+        }).then(function (response) {
+          if (response.status === 200) {
+            _this.inaccessibleHoursOfSelectedInstructor.push(response.data);
+          }
+
+          loading.close();
+        })["catch"](function (err) {
+          loading.close();
+          console.log(err);
+        });
+      });
     },
-    selectInstructor: function selectInstructor(e) {
-      this.selectInstructor = e;
-      console.log(this.selectInstructor, 666);
+    getDateForAppointment: function getDateForAppointment() {
+      return this.inaccessibleHoursOfSelectedInstructor.map(function (item) {
+        var date = new Date(item['start_time']);
+        return "".concat(new Intl.DateTimeFormat("en-us", {
+          month: "long"
+        }).format(date), ", ").concat(date.getDate(), ", ").concat(date.getHours());
+      });
     }
   },
   beforeCreate: function beforeCreate() {
@@ -2009,7 +2047,7 @@ __webpack_require__.r(__webpack_exports__);
     var loading = this.$vs.loading({
       color: '#48CAE4'
     });
-    axios.get('sanctum/csrf-cookie').then(function () {
+    axios.get('/sanctum/csrf-cookie').then(function () {
       axios.get('/api/instructors').then(function (response) {
         if (response.status === 200) {
           console.log(response.data);
@@ -2017,15 +2055,15 @@ __webpack_require__.r(__webpack_exports__);
         }
 
         loading.close();
-      })["catch"](function (e) {
+      })["catch"](function (err) {
         loading.close();
-        console.log(e);
+        console.log(err);
       });
     });
   },
   mounted: function mounted() {
     var currentDate = new Date();
-    var _ref = [currentDate.getMonth(), currentDate.getDate(), currentDate.getFullYear()],
+    var _ref = [currentDate.getMonth(), currentDate.getDate() + 1, currentDate.getFullYear()],
         month = _ref[0],
         day = _ref[1],
         year = _ref[2];
@@ -2036,6 +2074,9 @@ __webpack_require__.r(__webpack_exports__);
       dayItem.date = "".concat(new Intl.DateTimeFormat("en-us", {
         month: "long"
       }).format(date), ", ").concat(date.getDate());
+      dayItem.year = date.getFullYear();
+      dayItem.month = date.getMonth();
+      dayItem.day = date.getDate();
       dayItem.weekday = new Intl.DateTimeFormat("en-us", {
         weekday: "long"
       }).format(date);
@@ -2044,8 +2085,21 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   watch: {
-    selectedInstructor: function selectedInstructor() {
-      console.log(this.selectedInstructor, 234234);
+    selectedInstructorId: function selectedInstructorId() {
+      var _this3 = this;
+
+      this.selectedInstructor = this.instructors.find(function (el) {
+        return el.id === _this3.selectedInstructorId;
+      });
+      var startTime = +this.selectedInstructor['schedule'].split('-')[0];
+      var endTime = +this.selectedInstructor['schedule'].split('-')[1];
+      this.workingHoursOfSelectedInstructor = [];
+
+      for (var i = startTime; i <= endTime; i++) {
+        this.workingHoursOfSelectedInstructor.push(i + ':00');
+      }
+
+      this.inaccessibleHoursOfSelectedInstructor = this.selectedInstructor['appointments'];
     }
   }
 });
@@ -21163,31 +21217,28 @@ var render = function() {
           "div",
           {
             staticClass:
-              "flex flex-col justify-between items-start h-screen  gap-6"
+              "flex flex-col justify-start items-center h-screen  gap-6"
           },
           [
             _c(
               "div",
               { staticClass: "center con-selects" },
               [
-                _c(
-                  "vs-select",
-                  {
-                    ref: "p",
-                    attrs: {
-                      placeholder: _vm.selectedInstructor,
-                      value: _vm.selectedInstructor
-                    },
-                    on: {
-                      input: function($event) {
-                        return _vm.selectInstructor($event.target.value)
-                      }
-                    }
-                  },
-                  [
-                    _vm._l(_vm.instructors, function(instructor) {
-                      return [
-                        _c(
+                _vm.instructors.length > 0
+                  ? _c(
+                      "vs-select",
+                      {
+                        attrs: { "label-placeholder": "Select instructor" },
+                        model: {
+                          value: _vm.selectedInstructorId,
+                          callback: function($$v) {
+                            _vm.selectedInstructorId = $$v
+                          },
+                          expression: "selectedInstructorId"
+                        }
+                      },
+                      _vm._l(_vm.instructors, function(instructor) {
+                        return _c(
                           "vs-option",
                           {
                             key: instructor.id,
@@ -21198,23 +21249,141 @@ var render = function() {
                           },
                           [
                             _vm._v(
-                              "\n                            " +
+                              "\n                        " +
                                 _vm._s(instructor.name) +
-                                "\n                        "
+                                "\n                    "
                             )
                           ]
                         )
-                      ]
-                    })
-                  ],
-                  2
-                )
+                      }),
+                      1
+                    )
+                  : _vm._e()
               ],
               1
             ),
             _vm._v(" "),
-             false
-              ? 0
+            _vm.selectedInstructorId
+              ? _c(
+                  "div",
+                  {
+                    staticClass:
+                      "flex justify-between items-start shadow-2xl rounded-lg p-6"
+                  },
+                  [
+                    _c(
+                      "div",
+                      {
+                        staticClass:
+                          "time flex justify-start flex-col items-center"
+                      },
+                      [
+                        _c("div", { staticClass: "cell" }),
+                        _vm._v(" "),
+                        _vm._l(_vm.workingHours, function(workingHour) {
+                          return _c("div", { staticClass: "cell" }, [
+                            _c("h4", { staticClass: "font-bold" }, [
+                              _vm._v(_vm._s(workingHour))
+                            ])
+                          ])
+                        })
+                      ],
+                      2
+                    ),
+                    _vm._v(" "),
+                    _vm._l(_vm.days, function(day) {
+                      return _c(
+                        "div",
+                        {
+                          staticClass:
+                            "time flex justify-start flex-col items-center"
+                        },
+                        [
+                          _c("div", { staticClass: "cell flex-wrap " }, [
+                            _c(
+                              "h4",
+                              { staticClass: "w-full text-center font-bold" },
+                              [_vm._v(_vm._s(day.date))]
+                            ),
+                            _vm._v(" "),
+                            _c("h4", [_vm._v(_vm._s(day.weekday))])
+                          ]),
+                          _vm._v(" "),
+                          _vm
+                            .workingDays()
+                            .split(",")
+                            .includes(day.weekdayNumber.toString())
+                            ? _vm._l(_vm.workingHours, function(workingHour) {
+                                return _c("div", { staticClass: "cell" }, [
+                                  _vm
+                                    .getDateForAppointment()
+                                    .includes(
+                                      day.date +
+                                        ", " +
+                                        workingHour.split(":")[0]
+                                    )
+                                    ? _c(
+                                        "a",
+                                        {
+                                          staticClass:
+                                            "bg-gray-300 text-white w-16 py-2 px-4 rounded-lg\n                                   flex justify-center items-center disabled:opacity-50 cursor-not-allowed",
+                                          attrs: { disabled: "" }
+                                        },
+                                        [
+                                          _vm._v(
+                                            " " + _vm._s(workingHour) + " "
+                                          )
+                                        ]
+                                      )
+                                    : _vm.workingHoursOfSelectedInstructor.includes(
+                                        workingHour
+                                      )
+                                    ? _c(
+                                        "a",
+                                        {
+                                          staticClass:
+                                            "btn bg-purple-300 text-white w-16 flex justify-center items-center",
+                                          attrs: {
+                                            "data-time":
+                                              day.year +
+                                              "-" +
+                                              (day.month + 1) +
+                                              "-" +
+                                              day.day +
+                                              " " +
+                                              workingHour +
+                                              ":00"
+                                          },
+                                          on: {
+                                            click: function($event) {
+                                              return _vm.makeAppointment($event)
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _vm._v(
+                                            " " + _vm._s(workingHour) + " "
+                                          )
+                                        ]
+                                      )
+                                    : _c(
+                                        "a",
+                                        {
+                                          staticClass:
+                                            "text-gray-400 w-16 flex justify-center items-center"
+                                        },
+                                        [_vm._v(_vm._s(workingHour))]
+                                      )
+                                ])
+                              })
+                            : _vm._e()
+                        ],
+                        2
+                      )
+                    })
+                  ],
+                  2
+                )
               : _vm._e()
           ]
         )

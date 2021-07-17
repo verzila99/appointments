@@ -13,8 +13,9 @@ class Instructor extends Model
 
 
     public function appointments()
-    : void
+    : \Illuminate\Database\Eloquent\Relations\HasMany
+
     {
-        $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class);
     }
 }
