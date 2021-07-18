@@ -1,20 +1,32 @@
 <template>
     <div>
         <transition name = "modal">
-            <modal @close-modal = "closeModal" @register = "register" @login = "login" v-if = "active"></modal>
+            <modal @close-modal = "closeModal"
+                   @register = "register"
+                   @login = "login"
+                   v-if = "active"></modal>
         </transition>
 
         <navbar @activate-login-modal = "activateModal"
-                @logout = "logout"
+
+                @open-sidebar = "openSidebar"
+                @user-data = "login"
                 :username = "username"
-                :user-image = "userImage"></navbar>
-        <appointments></appointments>
+                :image-user = "userImage"></navbar>
+        <router-view></router-view>
+
+        <sidebar :sidebar-active = "activeSidebar"
+                 @closing-sidebar = "closingSidebar"
+                 :nickname = "username"
+                 @logout = "logout"
+        ></sidebar>
     </div>
 </template>
 <script>
-import Navbar       from "./components/Navbar";
-import Modal        from "./components/Modal";
-import Appointments from "./components/Appointments";
+import Navbar   from "./components/Navbar";
+import Modal    from "./components/Modal";
+import Schedule from "./components/Schedule";
+import Sidebar  from "./components/Sidebar";
 
 export default {
     data() {
@@ -22,6 +34,7 @@ export default {
             active: false,
             username: "",
             userImage: "",
+            activeSidebar: false,
         };
     },
     props: {
@@ -30,7 +43,8 @@ export default {
     components: {
         Navbar,
         Modal,
-        Appointments,
+        Schedule,
+        Sidebar
 
     },
     methods: {
@@ -55,6 +69,13 @@ export default {
         logout: function () {
             this.username = '';
             this.userImage = '';
+        },
+        openSidebar: function () {
+
+            this.activeSidebar = true;
+        },
+        closingSidebar: function () {
+            this.activeSidebar = false;
         }
     },
     watch: {
@@ -66,7 +87,8 @@ export default {
     }
 }
 </script>
-<style lang = "scss" scoped>
+<style lang = "scss"
+       scoped>
 .modal-enter-active {
     animation: modal .3s ease-out forwards;
 }

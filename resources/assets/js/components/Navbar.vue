@@ -5,27 +5,36 @@
             <div class = "logo"></div>
             <nav>
                 <ul class = "flex justify-around align items-center">
-                    <li><a href = "" class = "text-black hover:text-gray-300 font-bold">Make a appointment</a></li>
+                    <li>
+                        <router-link to = "/schedule"
+                                     class = "text-black hover:text-gray-300 font-bold">
+                            Schedule
+                        </router-link>
+
+                    </li>
                 </ul>
             </nav>
             <div class = "navbar-right flex justify-around items-center ">
 
-                <div v-if = "nickname" class = "flex justify-between items-center gap-4">
+                <div v-if = "nickname"
+                     class = "flex justify-between items-center gap-4">
                     <div class = "flex justify-around items-center gap-4">
-                        <vs-avatar class = "capitalize" size = "40" color = "#7d33ff">
+                        <vs-avatar class = "capitalize"
+                                   size = "40"
+                                   color = "#7d33ff">
                             <template>
                                 {{ nickname[0] }}
                             </template>
                         </vs-avatar>
-                        <a class = "a-icon capitalize" href = "#"> {{ nickname }}</a>
+                        <a @click = "openSidebar"
+                           class = "a-icon capitalize cursor-pointer"> {{ nickname }}</a>
 
                     </div>
-
-                    <button class = "btn bg-primary" @click = "logout">Logout
-                    </button>
                 </div>
 
-                <button v-else class = "btn bg-primary" @click = "activateLoginModal">Login
+                <button v-else
+                        class = "btn bg-primary"
+                        @click = "activateLoginModal">Login
                 </button>
 
             </div>
@@ -43,26 +52,20 @@ export default {
         return {
             active: false,
             nickname: '',
-            userImage: '',
+            userImage: ''
         }
     },
     props: {
         username: String,
+        imageUser: String
     },
     methods: {
         activateLoginModal: function () {
             this.$emit('activate-login-modal')
         },
-        logout: function () {
-            axios.get('/sanctum/csrf-cookie').then(() => {
-                axios.get('/api/logout').then(response => {
-                    if (response.status === 200) {
-                        this.nickname = '';
-                        this.userImage = '';
-                        this.$emit('logout');
-                    }
-                }).catch(error => console.log(error.response))
-            })
+
+        openSidebar: function () {
+            this.$emit('open-sidebar');
         }
     },
     beforeCreate: function () {
@@ -71,6 +74,7 @@ export default {
                 if (response.status === 200) {
                     this.nickname = response.data.name;
                     this.userImage = response.data.image;
+                    this.$emit('user-data', [this.nickname, this.userImage]);
                 }
             }).catch(error => console.log(error.response))
         })
@@ -78,6 +82,10 @@ export default {
     watch: {
         username: function () {
             this.nickname = this.username;
+
+        },
+        imageUser: function () {
+            this.userImage = this.imageUser;
         }
     }
 }
