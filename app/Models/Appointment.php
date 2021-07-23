@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Appointment extends Model
 {
     use HasFactory;
-
+    
     protected $guarded = [];
-
-
-    public function instructors()
+    
+    
+    public function instructor()
     : \Illuminate\Database\Eloquent\Relations\BelongsTo
-
+    
     {
         return $this->belongsTo(Instructor::class);
     }

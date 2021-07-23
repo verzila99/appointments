@@ -25,6 +25,29 @@ Route::get('/logout', [UserController::class, 'logout']);
 //    }
 //);
 
-Route::get('/show', [UserController::class, 'show']);
 Route::get('/instructors', [InstructorController::class, 'index']);
-Route::post('/appointments', [AppointmentController::class, 'store']);
+Route::get('/profile', [UserController::class, 'show']);
+
+Route::middleware('admin')->group(
+    function () {
+        Route::get('/all_appointments', [AppointmentController::class, 'all']);
+        Route::post('/instructors', [InstructorController::class, 'store']);
+        Route::put('/instructors/{id}', [InstructorController::class, 'update']);
+        Route::delete('/instructors/{id}', [InstructorController::class, 'destroy']);
+    }
+);
+Route::middleware('auth')->group(
+    function () {
+        Route::post('/appointments', [AppointmentController::class, 'store']);
+        Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy']);
+        Route::get('/appointments/', [AppointmentController::class, 'index']);
+        Route::put('/profile', [UserController::class, 'update']);
+        Route::get('/date', [AppointmentController::class, 'date']);
+    }
+);
+Route::middleware('super_admin')->group(
+    function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::put('/users', [UserController::class, 'updateRole']);
+    }
+);

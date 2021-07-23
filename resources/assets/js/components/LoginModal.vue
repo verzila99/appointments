@@ -14,7 +14,8 @@
         </div>
 
         <template v-if = "error.errors && error.errors.email">
-            <p v-for = "error in  error.errors.email" class = "text-red-600">{{ error }}</p>
+            <p v-for = "error in  error.errors.email"
+               class = "text-red-600">{{ error }}</p>
         </template>
 
         <label for = "password">Password</label>
@@ -29,16 +30,21 @@
                    placeholder = "Enter password">
         </div>
         <template v-if = "error.errors && error.errors.password">
-            <p v-for = "error in  error.errors.password" class = "text-red-600">{{ error }}</p>
+            <p v-for = "error in  error.errors.password"
+               class = "text-red-600">{{ error }}</p>
         </template>
-        <p v-else-if = "!error.message" class = "text-red-600">{{ error }}</p>
-        <vs-checkbox color = "#48CAE4" v-model = "remember_token">
+        <p v-else-if = "!error.message"
+           class = "text-red-600">{{ error }}</p>
+        <vs-checkbox color = "#48CAE4"
+                     v-model = "remember_token">
             Remember me
         </vs-checkbox>
-        <a class = "btn bg-primary" @click = "login">Sign in</a>
+        <a class = "btn bg-primary text-blue-50"
+           @click = "login">Sign in</a>
         <div class = "flex justify-between items-center w-full">
             <a class = "text-link hover:text-hover cursor-pointer">Forgot password?</a>
-            <a @click = "$emit('switch-to-register')" class = "text-link hover:text-hover cursor-pointer">Register</a>
+            <a @click = "$emit('switch-to-register')"
+               class = "text-link hover:text-hover cursor-pointer">Register</a>
         </div>
     </div>
 
@@ -65,7 +71,10 @@ export default {
                     remember_token: this.remember_token,
                 }).then(response => {
                     if (response.status === 200) {
-                        this.$emit('login', [response.data.name, response.data.image])
+                        this.$emit('login', {
+                            username: response.data.name, image: response.data.image, role:
+                                +response.data.role
+                        })
                     }
                 }).catch(error => {
                     this.error = error.response.data;

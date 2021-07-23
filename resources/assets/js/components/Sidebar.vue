@@ -1,42 +1,82 @@
 <template>
 
-    <vs-sidebar absolute
-                :open.sync = "activeSidebar">
+    <vs-sidebar v-if = "username"
+                absolute
+                reduce
+                hover-expand
+                v-model = "active"
+                open>
         <template #logo>
             <!-- ...img logo -->
         </template>
+
         <vs-sidebar-item id = "home"
-                         class = "mt-20">
+                         to = "/"
+                         class = "w-full">
             <template #icon>
                 <i class = "bx bx-home"></i>
             </template>
-            <router-link to = "/">
-                Home
-            </router-link>
+            Home
         </vs-sidebar-item>
-        <vs-sidebar-item id = "profile">
+
+        <vs-sidebar-item id = "schedule"
+                         to = "/schedule"
+                         class = "w-full">
+            <template #icon>
+                <i class = "bx bxs-calendar"></i>
+            </template>
+            Schedule
+        </vs-sidebar-item>
+        <vs-sidebar-item id = "profile"
+                         to = "/profile"
+                         class = "w-full">
             <template #icon>
                 <i class = "bx bxs-user"></i>
             </template>
-            <router-link to = "/profile">
-                Profile
-            </router-link>
+            Profile
         </vs-sidebar-item>
 
-        <vs-sidebar-item id = "appointments">
+        <vs-sidebar-item id = "appointments"
+                         to = "/appointments"
+                         class = "w-full">
             <template #icon>
                 <i class = "bx bx-dumbbell"></i>
             </template>
-            <router-link to = "/appointments">
-                Appointments
-            </router-link>
+            My appointments
+        </vs-sidebar-item>
+
+        <vs-sidebar-item v-if = "role && role > 0"
+                         id = "instructors"
+                         to = "/instructors">
+            <template #icon>
+                <i class = "bx bx-run"></i>
+            </template>
+            Instructors
+        </vs-sidebar-item>
+        <vs-sidebar-item v-if = "role && role > 0"
+                         id = "all_appointments"
+                         to = "/all_appointments">
+            <template #icon>
+                <i class = "bx bx-calendar-event"></i>
+            </template>
+            All appointments
+        </vs-sidebar-item>
+        <vs-sidebar-item
+            v-if = "role && role > 1"
+            id = "users"
+            to = "/users">
+            <template #icon>
+                <i class = "bx bx-user"></i>
+            </template>
+            Users
         </vs-sidebar-item>
 
         <div class = "border-b-2 w-full border-gray-200  my-4">
 
         </div>
 
-        <div @click = "logout">
+        <div @click = "logout"
+             class = "w-full">
             <vs-sidebar-item id = "logout"
             >
                 <template #icon>
@@ -56,11 +96,6 @@
                     </template>
                 </vs-avatar>
 
-                <vs-avatar badge-color = "danger"
-                           badge-position = "top-right">
-                    <i class = "bx bx-bell"></i>
-
-                </vs-avatar>
             </vs-row>
         </template>
     </vs-sidebar>
@@ -72,14 +107,14 @@ export default {
     data() {
         return {
             active: '',
-            activeSidebar: false,
+            username: '',
 
         }
     },
     name: "Sidebar",
     props: {
-        sidebarActive: Boolean,
         nickname: String,
+        role: Number,
     },
     methods: {
         logout: function () {
@@ -89,7 +124,7 @@ export default {
 
                     if (response.status === 200) {
                         this.$emit('logout');
-                        this.activeSidebar = false;
+                        this.username = '';
                     }
                     loading.close();
                 }).catch(error => {
@@ -100,18 +135,10 @@ export default {
         },
     },
     watch: {
-        sidebarActive: function () {
-            this.activeSidebar = this.sidebarActive;
 
-
-        },
-        activeSidebar: function () {
-            if (this.activeSidebar === false) {
-                this.$emit('closing-sidebar');
-
-            }
-
-        },
+        nickname: function () {
+            this.username = this.nickname
+        }
     },
 
 }

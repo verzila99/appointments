@@ -13,7 +13,8 @@
                    placeholder = "Enter your name">
         </div>
         <template v-if = "error.errors && error.errors.name">
-            <p v-for = "error in  error.errors.name" class = "text-red-600">{{ error }}</p>
+            <p v-for = "error in  error.errors.name"
+               class = "text-red-600">{{ error }}</p>
         </template>
         <label for = "email">Email</label>
         <div class = "flex  items-center rounded-md h-8 relative w-full">
@@ -26,7 +27,8 @@
                    placeholder = "Enter your email">
         </div>
         <template v-if = "error.errors && error.errors.email">
-            <p v-for = "error in  error.errors.email" class = "text-red-600">{{ error }}</p>
+            <p v-for = "error in  error.errors.email"
+               class = "text-red-600">{{ error }}</p>
         </template>
         <label for = "password">Password</label>
         <div class = "flex  items-center  rounded-md h-8 relative w-full">
@@ -49,12 +51,15 @@
                    placeholder = "Enter password again">
         </div>
         <template v-if = "error.errors && error.errors.password">
-            <p v-for = "error in  error.errors.password" class = "text-red-600">{{ error }}</p>
+            <p v-for = "error in  error.errors.password"
+               class = "text-red-600">{{ error }}</p>
         </template>
-        <a class = "btn bg-primary" @click = "register">Sign up</a>
+        <a class = "btn bg-primary text-blue-50"
+           @click = "register">Sign up</a>
         <div class = "flex justify-between items-center w-full">
             <a class = "text-link hover:text-hover cursor-pointer">Forgot password?</a>
-            <a @click = "$emit('switch-to-login')" class = "text-link hover:text-hover cursor-pointer">Sign in</a>
+            <a @click = "$emit('switch-to-login')"
+               class = "text-link hover:text-hover cursor-pointer">Sign in</a>
         </div>
     </div>
 </template>
@@ -98,7 +103,6 @@ export default {
                 color,
                 title,
                 position,
-
             });
             noti.close()
         }
