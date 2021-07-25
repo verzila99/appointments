@@ -79,7 +79,7 @@ export default {
         activeModal: function () {
             this.active = false;
             this.closeModal();
-            console.log(this.activeModal);
+
         }
     }
 }

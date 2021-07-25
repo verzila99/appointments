@@ -13,7 +13,8 @@
                    placeholder = "Enter your name">
         </div>
         <template v-if = "error.errors && error.errors.name">
-            <p v-for = "error in  error.errors.name"
+            <p v-for = "(error,i) in  error.errors.name"
+               :key = "i"
                class = "text-red-600">{{ error }}</p>
         </template>
         <label for = "email">Email</label>
@@ -27,7 +28,8 @@
                    placeholder = "Enter your email">
         </div>
         <template v-if = "error.errors && error.errors.email">
-            <p v-for = "error in  error.errors.email"
+            <p v-for = "(error,i) in  error.errors.email"
+               :key = "i"
                class = "text-red-600">{{ error }}</p>
         </template>
         <label for = "password">Password</label>
@@ -51,7 +53,8 @@
                    placeholder = "Enter password again">
         </div>
         <template v-if = "error.errors && error.errors.password">
-            <p v-for = "error in  error.errors.password"
+            <p v-for = "(error,i) in  error.errors.password"
+               :key = "i"
                class = "text-red-600">{{ error }}</p>
         </template>
         <a class = "btn bg-primary text-blue-50"

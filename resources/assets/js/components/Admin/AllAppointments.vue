@@ -217,7 +217,6 @@ export default {
     watch: {
 
         date() {
-            console.log(this.date);
             this.page = 1;
         },
         instructor() {

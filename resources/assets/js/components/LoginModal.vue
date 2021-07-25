@@ -14,13 +14,16 @@
         </div>
 
         <template v-if = "error.errors && error.errors.email">
-            <p v-for = "error in  error.errors.email"
+            <p v-for = "(error,i) in  error.errors.email"
+               :key = "i"
                class = "text-red-600">{{ error }}</p>
         </template>
 
         <label for = "password">Password</label>
         <div class = "flex  items-center  rounded-md h-8 relative w-full">
-            <i class = "bx bxs-lock text-gray-500 text-xl  absolute left-1.5 top-1/2 transform -translate-y-2/4"></i>
+            <i class = "bx bxs-lock text-gray-500 text-xl
+            absolute left-1.5 top-1/2 transform -translate-y-2/4">
+            </i>
             <input class = " rounded-lg outline-none focus:border-blue-400 border-2 border-solid border-opacity-40 py-2 pl-9 w-full"
                    :class = "{'border-red-600':error.errors && error.errors.password || !error.message && error}"
                    id = "password"
@@ -30,7 +33,8 @@
                    placeholder = "Enter password">
         </div>
         <template v-if = "error.errors && error.errors.password">
-            <p v-for = "error in  error.errors.password"
+            <p v-for = "(error,i) in  error.errors.password"
+               :key = "i"
                class = "text-red-600">{{ error }}</p>
         </template>
         <p v-else-if = "!error.message"

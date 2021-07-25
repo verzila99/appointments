@@ -17,18 +17,13 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 //
-//Route::middleware('auth:sanctum')->group(
-//    function () {
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
-Route::get('/logout', [UserController::class, 'logout']);
-//    }
-//);
 
 Route::get('/instructors', [InstructorController::class, 'index']);
 Route::get('/profile', [UserController::class, 'show']);
 
-Route::middleware('admin')->group(
+Route::middleware(['auth:sanctum', 'admin'])->group(
     function () {
         Route::get('/all_appointments', [AppointmentController::class, 'all']);
         Route::post('/instructors', [InstructorController::class, 'store']);
@@ -38,6 +33,11 @@ Route::middleware('admin')->group(
 );
 Route::middleware('auth')->group(
     function () {
+        Route::get('/logout', [UserController::class, 'logout']);
+    }
+);
+Route::middleware('auth:sanctum')->group(
+    function () {
         Route::post('/appointments', [AppointmentController::class, 'store']);
         Route::delete('/appointments/{id}', [AppointmentController::class, 'destroy']);
         Route::get('/appointments/', [AppointmentController::class, 'index']);
@@ -45,7 +45,7 @@ Route::middleware('auth')->group(
         Route::get('/date', [AppointmentController::class, 'date']);
     }
 );
-Route::middleware('super_admin')->group(
+Route::middleware(['auth:sanctum', 'super_admin'])->group(
     function () {
         Route::get('/users', [UserController::class, 'index']);
         Route::put('/users', [UserController::class, 'updateRole']);
